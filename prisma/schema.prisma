@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthenticatorTransport {
+  usb
+  ble
+  nfc
+  internal
+}
+
+enum AuthenticatorTransportFuture {
+  ble
+  internal
+  nfc
+  usb
+  cable
+  hybrid
+}
+
+type AuthenticatorDevice {
+    credentialID Bytes
+    credentialPublicKey Bytes
+    counter Int
+    transports AuthenticatorTransportFuture[]
+}
+
+model Authenticator {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  credentialBackedUp Boolean?
+  credentialDeviceType String?
+  credentialID Bytes
+  credentialPublicKey Bytes
+  counter Int
+  transports AuthenticatorTransport[]
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  currentChallenge String?
+  devices AuthenticatorDevice[]
+  email String? @unique
+  username String @unique
+  authenticators Authenticator[]
+}
