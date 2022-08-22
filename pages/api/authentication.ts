@@ -14,6 +14,16 @@ export default async function handler(
       body: { username },
     }: { body: { username: string } } = req;
 
+    const cookie = req.headers?.cookie?.split(`;`).forEach(function (cookie) {
+      let [name, ...rest] = cookie.split(`=`);
+      name = name?.trim();
+      if (!name) return;
+      const value = rest.join(`=`).trim();
+      if (!value) return;
+      return decodeURIComponent(value);
+    });
+
+    console.log('Authentication cookie: ' + cookie);
     // const creds = body.username ?? body.email
 
     const user = await prisma.user.findUnique({

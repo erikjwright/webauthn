@@ -50,9 +50,17 @@ export default async function handler(
 
     if (!registrationInfo) return null;
 
-    const { credentialPublicKey, credentialID, counter } = registrationInfo;
+    const {
+      credentialBackedUp,
+      credentialDeviceType,
+      credentialPublicKey,
+      credentialID,
+      counter,
+    } = registrationInfo;
 
     const newAuthenticator: Authenticator = {
+      credentialBackedUp,
+      credentialDeviceType,
       credentialID,
       credentialPublicKey,
       counter,
@@ -61,6 +69,13 @@ export default async function handler(
 
     await prisma.authenticator.create({ data: newAuthenticator });
 
-    res.status(200).send({ verified });
+    res
+      .setHeader('Set-Cookie', [
+        `authenticated=true; Expires=${new Date(
+          Date.now() + 6.048e8
+        )}; HttpOnly`,
+      ])
+      .status(200)
+      .send({ verified });
   }
 }
